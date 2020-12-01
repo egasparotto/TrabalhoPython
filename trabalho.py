@@ -9,25 +9,18 @@ def converterParaJson(lista):
   
 def ConverterDeJson(objeto):
     return json.loads(objeto)        
- 
-def limpar(): 
-    try:
-        from IPython import get_ipython
-        get_ipython().magic('clear')
-    except:
-        pass
-
+     
+    
 def cadastrarProjeto():
     print("Cadastrar Projeto")
-    id = int(input("Digite o id do projeto: "))
+    id = input("Digite o id do projeto: ")
     nome = input("Digite o nome do projeto: ")
     
     projeto = [id,nome]
     
     listaProjetos.append(projeto)
-    str = json.dumps(listaProjetos)
-    f = open("projetos.json", "w")
-    f.write(str)
+    f = open("projetos.csv", "w")
+    f.writelines([str(projeto[0]) + ',' + projeto[1] + '\n' for projeto in listaProjetos])
     f.close()
 
     
@@ -44,7 +37,7 @@ def projetos():
         print("MENU")
         print("1 - Listar")
         print("2 - Cadastrar")
-        print("3 - Exibir Gráfico")
+        print("3 - Exibir Gráfico de Horas Trabalhadas por Projeto")
         print("0 - Voltar")
         opcao = int(input("Digite a Opção: "))
         if(opcao == 0):
@@ -58,16 +51,15 @@ def projetos():
     
 def cadastrarMarcacao():
     print("Cadastrar Marcação")
-    id = int(input("Digite o id do projeto: "))
+    id = input("Digite o id do projeto: ")
     horaInicio = input("Digite a hora de início da marcação: ")
     horaTermino = input("Digite a hora de término da marcação: ")
     
     marcacao = [id,horaInicio,horaTermino ]
     
     listaMarcacoes.append(marcacao)
-    str = json.dumps(listaMarcacoes)
-    f = open("marcacoes.json", "w")
-    f.write(str)
+    f = open("marcacoes.csv", "w")
+    f.writelines([marcacao[0] + ',' + marcacao[1] + ',' + marcacao[2] + '\n' for marcacao in listaMarcacoes])
     f.close()
 
 
@@ -93,6 +85,26 @@ def criaGraficoProjeto():
     plt.ylabel('Horas')
     plt.title('Gráfico de Barras')
     plt.show()
+
+def criarGraficoPeriodoDeTrabalho():
+    manha = 0
+    tarde = 0
+    noite = 0
+    for marcacao in listaMarcacoes:
+        horaInicio = datetime.datetime.strptime(marcacao[1], '%H:%M').hour
+        if(horaInicio > 18):
+            noite += 1
+        elif(horaInicio > 12):
+            tarde += 1
+        elif(horaInicio > 6 ):
+            manha += 1
+        else:
+            noite += 1
+    nomes = ['Manhã', 'Tarde', 'Noite']
+    valores = [manha, tarde, noite]
+    total = sum(valores)
+    plt.pie(valores,labels=nomes, autopct=lambda p: '{:.0f}'.format(p * total /100))
+    plt.show()
     
 
 def listarMarcacoes():
@@ -105,6 +117,7 @@ def marcacoes():
         print("MENU")
         print("1 - Listar")
         print("2 - Cadastrar")
+        print("3 - Criar grafico de período de trabalho")
         print("0 - Voltar")
         opcao = int(input("Digite a Opção: "))
         if(opcao == 0):
@@ -113,6 +126,8 @@ def marcacoes():
             listarMarcacoes()
         elif(opcao == 2):
             cadastrarMarcacao()
+        elif(opcao == 3):
+            criarGraficoPeriodoDeTrabalho()
 
 def menu():
     while(True):
@@ -131,19 +146,27 @@ def menu():
  
 def carregarProjetos():
     try:
-        f = open("projetos.json", "r")
-        listaStr = json.loads(f.read())
+        f = open("projetos.csv", "r")        
+        lista = []
+        for linha in f.readlines():
+            linha = linha.replace('\n', '')
+            valores = linha.split(',')
+            lista.append(valores)
         f.close()
-        return listaStr
+        return lista
     except:
         return []
     
 def carregarMarcacoes():
     try:
-        f = open("marcacoes.json", "r")
-        listaStr = json.loads(f.read())
+        f = open("marcacoes.csv", "r")        
+        lista = []
+        for linha in f.readlines():
+            linha = linha.replace('\n', '')
+            valores = linha.split(',')
+            lista.append(valores)
         f.close()
-        return listaStr
+        return lista
     except:
         return []
            
